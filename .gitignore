@@ -1,0 +1,17 @@
+# Binaries
+/cacheproxy
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Build directories
+/cache/
+/vendor/
+
+# IDE/editor
+*.swp
+*.vscode/
+.idea/
+
+/bin/
