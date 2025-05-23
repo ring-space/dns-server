@@ -1,6 +1,7 @@
 package records
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 	"log"
@@ -9,32 +10,80 @@ import (
 	"time"
 )
 
-// Client хранит URL и кэш записей
+// Client хранит базовый URL, токен и кэш записей.
 type Client struct {
-	url     string
+	baseURL string
+	token   string
 	rec     map[string][]string
 	mu      sync.RWMutex
 	refresh time.Duration
 }
 
-// NewClient создаёт клиента
-func NewClient(url string, refresh time.Duration) *Client {
-	return &Client{url: url, rec: make(map[string][]string), refresh: refresh}
+// NewClient создаёт клиента с базовым URL, интервалом обновления и токеном.
+func NewClient(baseURL string, refresh time.Duration, token string) *Client {
+	return &Client{
+		baseURL: baseURL,
+		token:   token,
+		rec:     make(map[string][]string),
+		refresh: refresh,
+	}
 }
 
-// StartAutoRefresh запускает периодический фетч
+// register отправляет токен на endpoint /api/v1/dns/register.
+func (c *Client) register() {
+	url := c.baseURL + "/api/v1/dns/register"
+	payload := map[string]string{"token": c.token}
+	data, err := json.Marshal(payload)
+	if err != nil {
+		log.Printf("Ошибка маршалинга JSON для регистрации: %v", err)
+		return
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	if err != nil {
+		log.Printf("Ошибка создания POST-запроса для регистрации: %v", err)
+		return
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Printf("Ошибка при регистрации: %v", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(resp.Body)
+		log.Printf("Регистрация вернула %d: %s", resp.StatusCode, body)
+		return
+	}
+	log.Printf("Успешная регистрация с токеном")
+}
+
+// StartAutoRefresh сначала регистрируется, затем периодически обновляет записи.
 func (c *Client) StartAutoRefresh() {
+	c.register()
 	c.fetch()
-	for range time.Tick(c.refresh) {
+	ticker := time.NewTicker(c.refresh)
+	for range ticker.C {
 		c.fetch()
 	}
 }
 
-// fetch загружает записи
+// fetch делает GET на /zones с X-Api-Key и парсит JSON-ответ.
 func (c *Client) fetch() {
-	resp, err := http.Get(c.url)
+	url := c.baseURL + "/zones"
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		log.Printf("Ошибка запроса к %s: %v", c.url, err)
+		log.Printf("Ошибка создания GET-запроса к %s: %v", url, err)
+		return
+	}
+	req.Header.Set("X-Api-Key", c.token)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Printf("Ошибка при запросе %s: %v", url, err)
 		return
 	}
 	defer resp.Body.Close()
@@ -44,8 +93,6 @@ func (c *Client) fetch() {
 		log.Printf("Ошибка чтения тела ответа: %v", err)
 		return
 	}
-
-	// вот тут выводим чистый ответ (может быть JSON или что-то ещё)
 	log.Printf("[DEBUG] raw response: %s", body)
 
 	var data map[string][]string
@@ -60,7 +107,7 @@ func (c *Client) fetch() {
 	log.Printf("[REFRESH] загружено %d доменов", len(data))
 }
 
-// Get возвращает записи для домена
+// Get возвращает список IP для данного доменного имени.
 func (c *Client) Get(name string) []string {
 	c.mu.RLock()
 	defer c.mu.RUnlock()

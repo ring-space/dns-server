@@ -26,7 +26,7 @@ func main() {
 	// Регистрация обработчика
 	http.HandleFunc("/records", recordsHandler)
 
-	addr := ":8080"
+	addr := ":8081"
 	log.Printf("Starting Records Service on %s…", addr)
 	if err := http.ListenAndServe(addr, nil); err != nil {
 		log.Fatalf("Records Service failed: %v", err)

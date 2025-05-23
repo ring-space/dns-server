@@ -10,9 +10,9 @@ import (
 )
 
 // Run инициализирует пакеты и запускает DNS-сервер
-func Run(addr, recordsURL, geoDBPath string, refreshIntervalDuration time.Duration) {
+func Run(addr, recordsURL, geoDBPath string, refreshIntervalDuration time.Duration, apiKey string) {
 	// Инициализация GeoIP и records-клиента
-	recordClient := records.NewClient(recordsURL, refreshIntervalDuration)
+	recordClient := records.NewClient(recordsURL, refreshIntervalDuration, apiKey)
 	geoip.Init(geoDBPath)
 
 	// Автообновление записей

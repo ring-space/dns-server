@@ -33,6 +33,7 @@ func getEnvDuration(key string, fallback time.Duration) time.Duration {
 
 func main() {
 	// Defaults from ENV or hardcoded
+	defaultAPIKey := getEnv("RECORDS_API_KEY", "")
 	defaultPort := getEnv("DNS_PORT", ":53")
 	defaultRecordsURL := getEnv("RECORDS_SERVICE_URL", "")
 	defaultGeoDB := getEnv("GEOIP_DB_PATH", "")
@@ -41,6 +42,7 @@ func main() {
 	defaultMetricsFlush := getEnvDuration("METRICS_FLUSH", 5*time.Minute)
 
 	// Flags (override ENV if provided)
+	apiKey := flag.String("api-key", defaultAPIKey, "API-ключ для запроса к сервису записей (X-Api-Key)")
 	dnsPort := flag.String("port", defaultPort, "адрес и порт DNS-сервера, например :53")
 	recordsURL := flag.String("records-url", defaultRecordsURL, "URL сервиса записей, пример http://localhost:8080/records")
 	geoDBPath := flag.String("geoip-db", defaultGeoDB, "путь к GeoIP2 DB, например ./GeoLite2-City.mmdb")
@@ -61,5 +63,5 @@ func main() {
 	metrics.Init(*metricsPort, *metricsFlush)
 
 	// Запускаем DNS
-	dns.Run(*dnsPort, *recordsURL, *geoDBPath, *refresh)
+	dns.Run(*dnsPort, *recordsURL, *geoDBPath, *refresh, *apiKey)
 }
