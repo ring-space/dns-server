@@ -5,9 +5,9 @@ import (
 	"net"
 
 	"github.com/miekg/dns"
-	"github.com/singeol/dns-server/internal/geoip"
-	"github.com/singeol/dns-server/internal/metrics"
-	"github.com/singeol/dns-server/internal/records"
+	"github.com/ring-space/dns-server/internal/geoip"
+	"github.com/ring-space/dns-server/internal/metrics"
+	"github.com/ring-space/dns-server/internal/records"
 )
 
 func MakeHandler(cl *records.Client) dns.HandlerFunc {

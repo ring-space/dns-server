@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/singeol/dns-server/internal/dns"
-	"github.com/singeol/dns-server/internal/metrics"
+	"github.com/ring-space/dns-server/internal/dns"
+	"github.com/ring-space/dns-server/internal/metrics"
 )
 
 func getEnv(key, fallback string) string {

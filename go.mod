@@ -1,4 +1,4 @@
-module github.com/singeol/dns-server
+module github.com/ring-space/dns-server
 
 go 1.24.2
 

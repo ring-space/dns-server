@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/miekg/dns"
-	"github.com/singeol/dns-server/internal/geoip"
-	"github.com/singeol/dns-server/internal/records"
+	"github.com/ring-space/dns-server/internal/geoip"
+	"github.com/ring-space/dns-server/internal/records"
 )
 
 func Run(addr, recordsURL, geoDBPath string, refreshIntervalDuration time.Duration, apiKey string) {
