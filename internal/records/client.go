@@ -10,7 +10,6 @@ import (
 	"time"
 )
 
-// Client хранит базовый URL, токен и кэш записей.
 type Client struct {
 	baseURL string
 	token   string
@@ -19,7 +18,6 @@ type Client struct {
 	refresh time.Duration
 }
 
-// NewClient создаёт клиента с базовым URL, интервалом обновления и токеном.
 func NewClient(baseURL string, refresh time.Duration, token string) *Client {
 	return &Client{
 		baseURL: baseURL,
@@ -29,7 +27,6 @@ func NewClient(baseURL string, refresh time.Duration, token string) *Client {
 	}
 }
 
-// register отправляет токен на endpoint /api/v1/dns/register.
 func (c *Client) register() {
 	url := c.baseURL + "/api/v1/dns/register"
 	payload := map[string]string{"token": c.token}
@@ -61,7 +58,6 @@ func (c *Client) register() {
 	log.Printf("Успешная регистрация с токеном")
 }
 
-// StartAutoRefresh сначала регистрируется, затем периодически обновляет записи.
 func (c *Client) StartAutoRefresh() {
 	c.register()
 	c.fetch()
@@ -71,7 +67,6 @@ func (c *Client) StartAutoRefresh() {
 	}
 }
 
-// fetch делает GET на /zones с X-Api-Key и парсит JSON-ответ.
 func (c *Client) fetch() {
 	url := c.baseURL + "/zones"
 	req, err := http.NewRequest("GET", url, nil)
@@ -107,7 +102,6 @@ func (c *Client) fetch() {
 	log.Printf("[REFRESH] загружено %d доменов", len(data))
 }
 
-// Get возвращает список IP для данного доменного имени.
 func (c *Client) Get(name string) []string {
 	c.mu.RLock()
 	defer c.mu.RUnlock()

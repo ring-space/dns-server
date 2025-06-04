@@ -10,7 +10,6 @@ import (
 
 var db *geoip2.Reader
 
-// Init открывает базу GeoIP2
 func Init(path string) {
 	var err error
 	db, err = geoip2.Open(path)
@@ -19,7 +18,6 @@ func Init(path string) {
 	}
 }
 
-// CountryCode возвращает ISO-код страны для IP или "unknown" при ошибке
 func CountryCode(ip net.IP) string {
 	rec, err := db.City(ip)
 	if err != nil {
@@ -31,7 +29,6 @@ func CountryCode(ip net.IP) string {
 	return "unknown"
 }
 
-// PickNearest выбирает ближайший IP из списка
 func PickNearest(clientIP net.IP, candidates []string) string {
 	rec, err := db.City(clientIP)
 	if err != nil {
@@ -57,7 +54,6 @@ func PickNearest(clientIP net.IP, candidates []string) string {
 	return nearest
 }
 
-// haversine вычисляет расстояние между двумя координатами
 func haversine(lat1, lon1, lat2, lon2 float64) float64 {
 	const R = 6371
 	dLat := (lat2 - lat1) * math.Pi / 180

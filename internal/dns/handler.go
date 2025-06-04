@@ -10,14 +10,11 @@ import (
 	"github.com/singeol/dns-server/internal/records"
 )
 
-// MakeHandler возвращает функцию обработки DNS-запросов
 func MakeHandler(cl *records.Client) dns.HandlerFunc {
 	return func(w dns.ResponseWriter, r *dns.Msg) {
-		// IP клиента
 		host, _, _ := net.SplitHostPort(w.RemoteAddr().String())
 		clientIP := net.ParseIP(host)
 
-		// собирам статистику по странам
 		country := geoip.CountryCode(clientIP)
 		metrics.Record(country)
 

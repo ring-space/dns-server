@@ -22,7 +22,6 @@ var (
 	flushInterval time.Duration
 )
 
-// Init registers metrics and starts HTTP server and flusher
 func Init(addr string, interval time.Duration) {
 	flushInterval = interval
 	prometheus.MustRegister(gaugeRequests)
@@ -30,20 +29,17 @@ func Init(addr string, interval time.Duration) {
 	go startFlusher()
 }
 
-// Record increments the counter for a given country
 func Record(country string) {
 	mu.Lock()
 	counts[country]++
 	mu.Unlock()
 }
 
-// startHTTPServer serves /metrics on the given address
 func startHTTPServer(addr string) {
 	http.Handle("/metrics", promhttp.Handler())
 	http.ListenAndServe(addr, nil)
 }
 
-// startFlusher periodically flushes counts into Prometheus and resets them
 func startFlusher() {
 	ticker := time.NewTicker(flushInterval)
 	defer ticker.Stop()
@@ -52,7 +48,6 @@ func startFlusher() {
 	}
 }
 
-// flush updates Prometheus gauges and resets internal counters
 func flush() {
 	mu.Lock()
 	defer mu.Unlock()

@@ -10,7 +10,6 @@ import (
 	"github.com/singeol/dns-server/internal/metrics"
 )
 
-// getEnv возвращает значение из ENV или возвращает fallback
 func getEnv(key, fallback string) string {
 	if v := os.Getenv(key); v != "" {
 		return v
@@ -18,7 +17,6 @@ func getEnv(key, fallback string) string {
 	return fallback
 }
 
-// getEnvDuration парсит duration из ENV или возвращает fallback
 func getEnvDuration(key string, fallback time.Duration) time.Duration {
 	if v := os.Getenv(key); v != "" {
 		d, err := time.ParseDuration(v)
@@ -32,7 +30,6 @@ func getEnvDuration(key string, fallback time.Duration) time.Duration {
 }
 
 func main() {
-	// Defaults from ENV or hardcoded
 	defaultAPIKey := getEnv("RECORDS_API_KEY", "")
 	defaultPort := getEnv("DNS_PORT", ":53")
 	defaultRecordsURL := getEnv("RECORDS_SERVICE_URL", "")
@@ -41,7 +38,6 @@ func main() {
 	defaultMetricsPort := getEnv("METRICS_PORT", ":9090")
 	defaultMetricsFlush := getEnvDuration("METRICS_FLUSH", 5*time.Minute)
 
-	// Flags (override ENV if provided)
 	apiKey := flag.String("api-key", defaultAPIKey, "API-ключ для запроса к сервису записей (X-Api-Key)")
 	dnsPort := flag.String("port", defaultPort, "адрес и порт DNS-сервера, например :53")
 	recordsURL := flag.String("records-url", defaultRecordsURL, "URL сервиса записей, пример http://localhost:8080/records")
@@ -51,7 +47,6 @@ func main() {
 	metricsFlush := flag.Duration("metrics-flush", defaultMetricsFlush, "интервал сброса и публикации метрик")
 	flag.Parse()
 
-	// Проверяем обязательные параметры
 	if *recordsURL == "" {
 		log.Fatal("не задан records-url: установите флаг -records-url или ENV RECORDS_SERVICE_URL")
 	}
@@ -59,9 +54,7 @@ func main() {
 		log.Fatal("не задан путь к GeoIP: установите флаг -geoip-db или ENV GEOIP_DB_PATH")
 	}
 
-	// Стартуем HTTP-сервер метрик и флаш
 	metrics.Init(*metricsPort, *metricsFlush)
 
-	// Запускаем DNS
 	dns.Run(*dnsPort, *recordsURL, *geoDBPath, *refresh, *apiKey)
 }
